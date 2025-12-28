@@ -22,10 +22,11 @@ export function TokenColumnHeader({
     });
   };
   return (
-    <div className="flex items-center justify-between border-b border-slate-800 px-3 py-2">
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-semibold">{title}</span>
-        <span className="rounded bg-slate-800 px-1.5 py-0.5 text-xs text-slate-400">
+    <div className="flex items-center justify-between border-b border-slate-800 px-3 py-1.5">
+      <div className="flex items-center gap-1">
+        <span className="text-[13px] font-semibold">{title}</span>
+        <span className="flex items-center gap-1 text-[10px] text-teal-400">
+          <span className="w-1.5 h-1.5 rounded-full bg-teal-400 shadow-[0_0_6px_rgba(45,212,191,0.8)]" />
           LIVE
         </span>
       </div>
@@ -35,10 +36,10 @@ export function TokenColumnHeader({
             key={p}
             onClick={() => onPresetChange(p)}
             className={clsx(
-              "rounded px-2 py-0.5 text-xs transition",
+              "px-1.5 text-[11px] transition",
               preset === p
-                ? "bg-blue-500/20 text-blue-400"
-                : "text-slate-400 hover:text-slate-200"
+                ? "text-blue-400"
+                : "text-slate-500 hover:text-slate-300"
             )}
           >
             {p}

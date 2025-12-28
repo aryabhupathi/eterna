@@ -1,9 +1,11 @@
 import { configureStore } from "@reduxjs/toolkit";
-import livePricesSlice from "./slices/livePricesSlice";
+import tokenReducer from "./slices/tokenSlice";
+import livePricesReducer from "./slices/livePricesSlice";
 export const store = configureStore({
   reducer: {
-    livePrices: livePricesSlice,
+    token: tokenReducer,
+    livePrices: livePricesReducer,
   },
-})
+});
 export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;

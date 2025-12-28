@@ -1,16 +1,16 @@
 "use client";
-import { JSX, useEffect, useState } from "react";
-interface ProgressiveListProps<T> {
+import { Fragment, JSX, useEffect, useState } from "react";
+interface ProgressiveListProps<T extends { id: string }> {
   items: T[];
   renderItem: (item: T, index: number) => JSX.Element;
   intervalMs?: number;
 }
-export function ProgressiveList<T>({
+export function ProgressiveList<T extends { id: string }>({
   items,
   renderItem,
   intervalMs = 50,
 }: ProgressiveListProps<T>) {
-  const [visibleCount, setVisibleCount] = useState(items.length);
+  const [visibleCount, setVisibleCount] = useState(0);
   useEffect(() => {
     if (!items.length) return;
     let i = 0;
@@ -22,5 +22,11 @@ export function ProgressiveList<T>({
     }, intervalMs);
     return () => clearInterval(interval);
   }, [items, intervalMs]);
-  return <div className="overflow-auto">{items.slice(0, visibleCount).map(renderItem)}</div>;
+  return (
+    <>
+      {items.slice(0, visibleCount).map((item, index) => (
+        <Fragment key={item.id}>{renderItem(item, index)}</Fragment>
+      ))}
+    </>
+  );
 }

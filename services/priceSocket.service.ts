@@ -11,7 +11,7 @@ export function connectPriceSocket(pairs: string[]) {
     const msg = JSON.parse(event.data);
     const data = msg.data;
     const price = Number(data.p);
-    const symbol = data.s.replace("USDT", "").toUpperCase();
+    const symbol = data.s.replace("USDT", "");
     store.dispatch(
       updatePrice({
         id: symbol,

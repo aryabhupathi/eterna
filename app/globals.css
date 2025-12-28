@@ -131,3 +131,27 @@
     transform: translateX(100%);
   }
 }
+
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+@keyframes trade-in {
+  0% {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-trade-in {
+  animation: trade-in 220ms ease-out;
+}

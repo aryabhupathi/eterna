@@ -1,4 +1,9 @@
 import PairClient from "./PairClient";
-export default function PairPage({ params }: { params: { pair: string } }) {
-  return <PairClient pair={params.pair} />;
+export default async function PairPage({
+  params,
+}: {
+  params: Promise<{ pair: string }>;
+}) {
+  const { pair } = await params;
+  return <PairClient pair={pair} />;
 }

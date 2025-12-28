@@ -29,14 +29,24 @@ export function TokenColumn({
   const [preset, setPreset] = useState<PresetKey>("P1");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const visibleTokens = useMemo(() => {
-    if (!data) return [];
-    const base = data.filter(PRESETS[preset]);
-    const final =
-      base.length === 0 && preset === "P1" ? data.filter(PRESETS.P2) : base;
-    return sortTokens(final, sort);
-  }, [data, preset, sort]);
+    if (!data || data.length === 0) return [];
+    const p1 = data.filter(PRESETS.P1);
+    const p2 = data.filter(PRESETS.P2);
+    const p3 = data.filter(PRESETS.P3);
+    const filtered = data.filter(PRESETS[preset]);
+    return sortTokens(filtered.length ? filtered : data, sort);
+  }, [data, preset, sort, stage]);
   return (
-    <div className="flex flex-col h-full rounded-2xl border border-slate-800 bg-linear-to-b from-slate-900/90 to-slate-900/50 backdrop-blur overflow-auto">
+    <div
+      className="
+  flex flex-col h-full
+  rounded-2xl
+  border border-white/5
+  bg-linear-to-b from-[#0f172a]/80 to-[#0b1220]/80
+  backdrop-blur-sm
+  overflow-hidden
+"
+    >
       <TokenColumnHeader
         title={title}
         sort={sort}
@@ -44,13 +54,19 @@ export function TokenColumn({
         preset={preset}
         onPresetChange={setPreset}
       />
-      <div className="flex-1 overflow-y-auto px-2 pb-2 space-y-2">
+      <div
+        className="
+  flex-1 overflow-y-auto
+  px-1 pb-1
+  space-y-1
+  scrollbar-thin
+  scrollbar-thumb-white/10
+  scrollbar-track-transparent
+"
+      >
         {isLoading &&
           Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton
-              key={i}
-              className="h-24 w-full rounded-xl bg-slate-800/60"
-            />
+            <Skeleton key={i} className="h-14 rounded-[10px] bg-white/5" />
           ))}
         {isError && (
           <div className="text-xs text-red-400 px-2">
