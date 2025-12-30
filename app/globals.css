@@ -155,3 +155,12 @@
 .animate-trade-in {
   animation: trade-in 220ms ease-out;
 }
+
+.flash-up {
+  color: #34d399; 
+}
+
+.flash-down {
+  color: #f87171; 
+}
+

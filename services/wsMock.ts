@@ -4,7 +4,7 @@ type PriceUpdate = {
   price: number;
 };
 let interval: NodeJS.Timeout | null = null;
-let prices = new Map<string, number>();
+const prices = new Map<string, number>();
 const BASE_PRICE = 6000;
 const MAX_TICK = 50;
 export function startPriceFeed(

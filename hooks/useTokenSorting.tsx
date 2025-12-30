@@ -9,7 +9,7 @@ export function useTokenSorting(tokens: Token[]) {
       case "price":
         return copy.sort((a, b) => b.price - a.price);
       case "volume":
-        return copy.sort((a, b) => b.volume24h - a.volume24h);
+        return copy.sort((a, b) => b.volume - a.volume);
       case "newest":
       default:
         return copy.sort(

@@ -1,209 +1,59 @@
-  // "use client";
-  // import { useEffect, useRef } from "react";
-  // import {
-  //   createChart,
-  //   ColorType,
-  //   CandlestickSeries,
-  //   ISeriesApi,
-  //   CandlestickData,
-  //   UTCTimestamp,
-  // } from "lightweight-charts";
-  // export default function CandlestickChart({
-  //   data,
-  // }: {
-  //   data: CandlestickData<UTCTimestamp>[];
-  // }) {
-  //   const chartRef = useRef<HTMLDivElement>(null);
-  //   const chartApiRef = useRef<ReturnType<typeof createChart> | null>(null);
-  //   const seriesRef = useRef<ISeriesApi<"Candlestick", UTCTimestamp> | null>(
-  //     null
-  //   );
-  //   useEffect(() => {
-  //     if (!chartRef.current) return;
-  //     const chart = createChart(chartRef.current, {
-  //       layout: {
-  //         background: { type: ColorType.Solid, color: "#000000" },
-  //         textColor: "#cbd5e1",
-  //       },
-  //       grid: {
-  //         vertLines: { color: "#1e293b" },
-  //         horzLines: { color: "#1e293b" },
-  //       },
-  //       timeScale: {
-  //         timeVisible: true,
-  //         secondsVisible: true,
-  //       },
-  //       rightPriceScale: {
-  //         borderColor: "#334155",
-  //       },
-  //       crosshair: { mode: 1 },
-  //       height: 420,
-  //     });
-  //     const series = chart.addSeries(CandlestickSeries, {
-  //       upColor: "#22c55e",
-  //       downColor: "#ef4444",
-  //       wickUpColor: "#22c55e",
-  //       wickDownColor: "#ef4444",
-  //       borderVisible: false,
-  //     });
-  //     chartApiRef.current = chart;
-  //     seriesRef.current = series;
-  //     const resizeObserver = new ResizeObserver(() => {
-  //       if (!chartRef.current) return;
-  //       chart.applyOptions({
-  //         width: chartRef.current.clientWidth,
-  //       });
-  //     });
-  //     resizeObserver.observe(chartRef.current);
-  //     return () => {
-  //       resizeObserver.disconnect();
-  //       chart.remove();
-  //       chartApiRef.current = null;
-  //       seriesRef.current = null;
-  //     };
-  //   }, []);
-  //   useEffect(() => {
-  //     if (!seriesRef.current) return;
-  //     if (!data.length) return;
-  //     seriesRef.current.setData(data);
-  //   }, [data]);
-  //   return <div ref={chartRef} className="w-full h-full min-h-[260px]" />;
-  // }
-
-
-// "use client";
-
-// import { useEffect, useRef } from "react";
-// import {
-//   createChart,
-//   ColorType,
-//   CrosshairMode,
-//   CandlestickData,
-//   Time,
-//   ISeriesApi,
-//   CandlestickSeries,
-// } from "lightweight-charts";
-
-// export default function CandlestickChart({
-//   data,
-// }: {
-//   data: CandlestickData<Time>[];
-// }) {
-//   const chartRef = useRef<HTMLDivElement>(null);
-//   const chartApiRef = useRef<ReturnType<typeof createChart> | null>(null);
-//   const seriesRef =
-//     useRef<ISeriesApi<"Candlestick", Time> | null>(null);
-
-//   useEffect(() => {
-//     if (!chartRef.current) return;
-
-//     const chart = createChart(chartRef.current, {
-//       layout: {
-//         background: { type: ColorType.Solid, color: "#0b0f14" },
-//         textColor: "#94a3b8",
-//       },
-//       grid: {
-//         vertLines: { color: "#1e293b" },
-//         horzLines: { color: "#1e293b" },
-//       },
-//       crosshair: { mode: CrosshairMode.Normal },
-//       rightPriceScale: {
-//         borderColor: "#1e293b",
-//         scaleMargins: { top: 0.15, bottom: 0.15 },
-//       },
-//       timeScale: {
-//         timeVisible: true,
-//         secondsVisible: true,
-//         rightOffset: 8,
-//         barSpacing: 6,
-//         fixLeftEdge: true,
-//         borderColor: "#1e293b",
-//       },
-//       height: 420,
-//     });
-
-//     const series = chart.addSeries(CandlestickSeries, {
-//       upColor: "#22c55e",
-//       downColor: "#ef4444",
-//       wickUpColor: "#22c55e",
-//       wickDownColor: "#ef4444",
-//       borderVisible: false,
-//       priceLineVisible: true,
-//       lastValueVisible: true,
-//     });
-
-//     chartApiRef.current = chart;
-//     seriesRef.current = series;
-
-//     const ro = new ResizeObserver(() => {
-//       if (!chartRef.current) return;
-//       chart.applyOptions({ width: chartRef.current.clientWidth });
-//     });
-
-//     ro.observe(chartRef.current);
-
-//     return () => {
-//       ro.disconnect();
-//       chart.remove();
-//     };
-//   }, []);
-
-//   useEffect(() => {
-//     if (!seriesRef.current || !data.length) return;
-//     seriesRef.current.setData(data);
-//     chartApiRef.current?.timeScale().scrollToRealTime();
-//   }, [data]);
-
-//   return <div ref={chartRef} className="w-full h-full min-h-80" />;
-// }
-
 "use client";
-
 import { useEffect, useRef } from "react";
 import {
   createChart,
   ColorType,
-  CrosshairMode,
   CandlestickData,
-  Time,
+  UTCTimestamp,
+  IChartApi,
   ISeriesApi,
   CandlestickSeries,
 } from "lightweight-charts";
-
 type Timeframe = "1s" | "1m" | "5m";
-
+const BUCKET_SEC: Record<Timeframe, number> = {
+  "1s": 1,
+  "1m": 60,
+  "5m": 300,
+};
 export default function CandlestickChart({
-  data,
+  price,
   timeframe,
 }: {
-  data: CandlestickData<Time>[];
+  price: number;
   timeframe: Timeframe;
 }) {
-  const chartRef = useRef<HTMLDivElement>(null);
-  const chartApiRef = useRef<ReturnType<typeof createChart> | null>(null);
-  const seriesRef = useRef<ISeriesApi<"Candlestick", Time> | null>(null);
-
-  /* ---------- INIT ---------- */
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const chartRef = useRef<IChartApi | null>(null);
+  const seriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
+  const lastCandleRef = useRef<CandlestickData<UTCTimestamp> | null>(null);
   useEffect(() => {
-    if (!chartRef.current) return;
-
-    const chart = createChart(chartRef.current, {
+    if (!containerRef.current) return;
+    const chart = createChart(containerRef.current, {
       layout: {
         background: { type: ColorType.Solid, color: "#0b0f14" },
-        textColor: "#94a3b8",
+        textColor: "#9ca3af",
       },
       grid: {
-        vertLines: { color: "#1e293b" },
-        horzLines: { color: "#1e293b" },
+        vertLines: { color: "rgba(255,255,255,0.04)" },
+        horzLines: { color: "rgba(255,255,255,0.04)" },
       },
-      crosshair: { mode: CrosshairMode.Normal },
       rightPriceScale: {
-        borderColor: "#1e293b",
-        scaleMargins: { top: 0.15, bottom: 0.15 },
+        autoScale: true,
+        borderVisible: false,
+        scaleMargins: { top: 0.05, bottom: 0.05 },
       },
-      height: 420,
+      timeScale: {
+        borderVisible: false,
+        barSpacing: 6,
+        rightOffset: 3,
+        fixLeftEdge: true,
+        minBarSpacing: 4,
+      },
+      crosshair: {
+        vertLine: { visible: true },
+        horzLine: { visible: true },
+      },
     });
-
     const series = chart.addSeries(CandlestickSeries, {
       upColor: "#22c55e",
       downColor: "#ef4444",
@@ -213,64 +63,74 @@ export default function CandlestickChart({
       priceLineVisible: true,
       lastValueVisible: true,
     });
-
-    chartApiRef.current = chart;
+    chartRef.current = chart;
     seriesRef.current = series;
-
-    const ro = new ResizeObserver(() => {
-      if (!chartRef.current) return;
-      chart.applyOptions({ width: chartRef.current.clientWidth });
-    });
-
-    ro.observe(chartRef.current);
-
+    const resize = () => {
+      if (!containerRef.current) return;
+      chart.applyOptions({
+        width: containerRef.current.clientWidth,
+        height: containerRef.current.clientHeight,
+      });
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(containerRef.current);
     return () => {
       ro.disconnect();
       chart.remove();
     };
   }, []);
-
-  /* ---------- TIMEFRAME-BASED CHART OPTIONS ---------- */
   useEffect(() => {
-    if (!chartApiRef.current) return;
-
-    const tfOptions =
-      timeframe === "1s"
-        ? {
-            timeScale: {
-              secondsVisible: true,
-              timeVisible: true,
-              barSpacing: 3,
-              rightOffset: 2,
-            },
-          }
-        : timeframe === "1m"
-        ? {
-            timeScale: {
-              secondsVisible: false,
-              timeVisible: true,
-              barSpacing: 6,
-              rightOffset: 6,
-            },
-          }
-        : {
-            timeScale: {
-              secondsVisible: false,
-              timeVisible: true,
-              barSpacing: 10,
-              rightOffset: 10,
-            },
-          };
-
-    chartApiRef.current.applyOptions(tfOptions);
-  }, [timeframe]);
-
-  /* ---------- DATA UPDATE ---------- */
+    if (!seriesRef.current || !price) return;
+    const now = Math.floor(Date.now() / 1000);
+    const bucket = BUCKET_SEC[timeframe];
+    const history: CandlestickData<UTCTimestamp>[] = [];
+    let base = price;
+    for (let i = 50; i > 0; i--) {
+      const time = (now - i * bucket) as UTCTimestamp;
+      const open = base + (Math.random() - 0.5) * 20;
+      const close = open + (Math.random() - 0.5) * 20;
+      const high = Math.max(open, close) + Math.random() * 10;
+      const low = Math.min(open, close) - Math.random() * 10;
+      history.push({ time, open, high, low, close });
+      base = close;
+    }
+    seriesRef.current.setData(history);
+    lastCandleRef.current = history.at(-1) ?? null;
+    chartRef.current?.timeScale().fitContent();
+  }, [price, timeframe]);
   useEffect(() => {
-    if (!seriesRef.current || !data.length) return;
-    seriesRef.current.setData(data);
-    chartApiRef.current?.timeScale().scrollToRealTime();
-  }, [data]);
-
-  return <div ref={chartRef} className="w-full h-full min-h-[320px]" />;
+    if (!seriesRef.current || !price) return;
+    const now = Math.floor(Date.now() / 1000);
+    const bucket =
+      Math.floor(now / BUCKET_SEC[timeframe]) * BUCKET_SEC[timeframe];
+    const time = bucket as UTCTimestamp;
+    const last = lastCandleRef.current;
+    if (!last || last.time !== time) {
+      const open = last ? last.close : price;
+      const candle: CandlestickData<UTCTimestamp> = {
+        time,
+        open,
+        high: price,
+        low: price,
+        close: price,
+      };
+      lastCandleRef.current = candle;
+      seriesRef.current.update(candle);
+      return;
+    }
+    const updated: CandlestickData<UTCTimestamp> = {
+      ...last,
+      high: Math.max(last.high, price),
+      low: Math.min(last.low, price),
+      close: price,
+    };
+    lastCandleRef.current = updated;
+    seriesRef.current.update(updated);
+  }, [price, timeframe]);
+  return (
+    <div className="w-full h-full relative overflow-hidden">
+      <div ref={containerRef} className="absolute inset-0" />
+    </div>
+  );
 }

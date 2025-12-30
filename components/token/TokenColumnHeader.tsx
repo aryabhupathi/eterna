@@ -1,7 +1,7 @@
 "use client";
 import clsx from "clsx";
-import { SortState } from "@/types/sort";
 import { PresetKey } from "@/types/presets";
+import { SortState } from "@/types/sortTokens";
 export function TokenColumnHeader({
   title,
   sort,

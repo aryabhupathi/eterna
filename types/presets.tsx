@@ -1,5 +1,4 @@
 import { Token } from "./token";
-
 export const PRESETS = {
   P1: (t:Token) =>
     t.marketCap < 300_000 &&

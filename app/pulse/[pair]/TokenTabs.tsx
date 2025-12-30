@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { Token } from "@/types/token";
 import LiveTrades from "@/components/token/LiveTrade";
-type Tab = "trades" | "holders" | "positions" | "dev";
+type Tab = "trades" | "holders" | "dev";
 export default function TokenTabs({
   token,
   price,
@@ -12,8 +12,8 @@ export default function TokenTabs({
 }) {
   const [active, setActive] = useState<Tab>("trades");
   return (
-    <div className="h-48 border-t border-white/5 bg-black/30 backdrop-blur flex flex-col">
-      <div className="flex gap-5 px-4 py-2 text-[12px] border-b border-white/5">
+    <div className="flex flex-col flex-1 min-h-0 bg-black/30">
+      <div className="shrink-0 flex gap-4 px-3 py-2 text-xs border-b border-white/5 overflow-x-auto scrollbar-none">
         <TabButton
           active={active === "trades"}
           onClick={() => setActive("trades")}
@@ -30,15 +30,12 @@ export default function TokenTabs({
           Dev Tokens
         </TabButton>
       </div>
-      <div className="flex-1 min-h-0">
-  {active === "trades" && typeof price === "number" && (
-    <LiveTrades price={price} />
-  )}
-  {active !== "trades" && (
-    <div className="p-4 text-slate-400">Coming soon</div>
-  )}
-</div>
-
+      <div className="flex-1 min-h-0 overflow-hidden">
+        {active === "trades" && <LiveTrades price={price} />}
+        {active !== "trades" && (
+          <div className="p-4 text-slate-400">Coming soon</div>
+        )}
+      </div>
     </div>
   );
 }

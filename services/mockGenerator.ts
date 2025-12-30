@@ -5,13 +5,16 @@ const randomFloat = (min: number, max: number, fixed = 2) =>
   Number((Math.random() * (max - min) + min).toFixed(fixed));
 const randomAddress = (seed: number) =>
   `0x${(Math.random().toString(16) + seed).replace(".", "").slice(0, 40)}`;
+const randomPrice = (min: number, max: number) =>
+  Number((Math.random() * (max - min) + min).toFixed(6));
 export function generateNewPairs(): Token[] {
   return Array.from({ length: 12 }).map((_, i) => ({
     id: `new-${i}`,
     name: `New Token ${i + 1}`,
     symbol: `N${i + 1}`,
     address: randomAddress(i),
-    image: "/token-placeholder.png",
+    price: randomPrice(0.00001, 0.01),
+    image: "",
     marketCap: random(50_000, 250_000),
     liquidity: random(5_000, 40_000),
     volume: random(10_000, 80_000),
@@ -23,7 +26,7 @@ export function generateNewPairs(): Token[] {
     sellTax: 4,
     dexListed: false,
     age: `${random(1, 8)}m`,
-    createdAt: Date.now(),
+    createdAt: new Date().toISOString(),
     stage: "new",
     trending: i < 3,
   }));
@@ -34,7 +37,8 @@ export function generateFinalStretch(): Token[] {
     name: `Final Token ${i + 1}`,
     symbol: `F${i + 1}`,
     address: randomAddress(i),
-    image: "/token-placeholder.png",
+    price: randomPrice(0.00001, 0.01),
+    image: "",
     marketCap: random(350_000, 900_000),
     liquidity: random(80_000, 250_000),
     volume: random(150_000, 600_000),
@@ -46,7 +50,7 @@ export function generateFinalStretch(): Token[] {
     sellTax: 3,
     dexListed: true,
     age: `${random(30, 90)}m`,
-    createdAt: Date.now(),
+    createdAt: new Date().toISOString(),
     stage: "final",
     trending: i < 2,
   }));
@@ -57,7 +61,8 @@ export function generateMigrated(): Token[] {
     name: `Migrated Token ${i + 1}`,
     symbol: `M${i + 1}`,
     address: randomAddress(i),
-    image: "/token-placeholder.png",
+    price: randomPrice(0.00001, 0.01),
+    image: "",
     marketCap: random(1_200_000, 8_000_000),
     liquidity: random(300_000, 2_000_000),
     volume: random(500_000, 5_000_000),
@@ -69,7 +74,7 @@ export function generateMigrated(): Token[] {
     sellTax: 2,
     dexListed: true,
     age: `${random(3, 14)}h`,
-    createdAt: Date.now(),
+    createdAt: new Date().toISOString(),
     stage: "migrated",
     trending: false,
   }));
