@@ -9,14 +9,15 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { TokenRow } from "./TokenRow";
 import { TokenColumnHeader } from "./TokenColumnHeader";
 import { EmptyState } from "./EmptyState";
-const DEFAULT_SORT: SortState = { key: "price", order: "desc" };
+type LiveToken = Token & {
+  _lastUpdatedAt: number;
+  _highlightTop?: boolean;
+};
 type TokenFilter = {
   search?: string;
   minMarketCap?: number;
 };
-type LiveToken = Token & {
-  _lastUpdatedAt: number;
-};
+const DEFAULT_SORT: SortState = { key: "price", order: "desc" };
 function clamp(n: number, min: number, max: number) {
   return Math.max(min, Math.min(max, n));
 }
@@ -51,34 +52,23 @@ export function TokenColumn({
     queryFn: () => fetchTokensByStage(stage),
     staleTime: 10_000,
   });
-  const [preset, setPreset] = useState<PresetKey>("P1");
+  const defaultPresetByStage: Record<TokenStage, PresetKey> = {
+    new: "P1",
+    final: "P2",
+    migrated: "P3",
+  };
+  const [preset, setPreset] = useState<PresetKey>(defaultPresetByStage[stage]);
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const [filter, setFilter] = useState<TokenFilter>({});
-  const [tokens, setTokens] = useState<Token[]>([]);
+  const [baseTokens, setBaseTokens] = useState<Token[]>([]);
+  const [liveTokens, setLiveTokens] = useState<LiveToken[]>([]);
   useEffect(() => {
-    if (data?.length) {
-      setTokens(
-        data.map((t) => ({
-          ...t,
-          _lastUpdatedAt: Date.now(),
-        }))
-      );
-    }
+    if (!data?.length) return;
+    setBaseTokens(data);
   }, [data]);
-  useEffect(() => {
-    if (!tokens.length) return;
-    const interval = setInterval(() => {
-      setTokens((prev) => {
-        let next = prev.map((t) => (Math.random() < 0.4 ? mutateToken(t) : t));
-        next = [...next].sort((a, b) => b._lastUpdatedAt - a._lastUpdatedAt);
-        return next;
-      });
-    }, 3000);
-    return () => clearInterval(interval);
-  }, [tokens.length]);
-  const visibleTokens = useMemo(() => {
-    if (!tokens.length) return [];
-    let list = tokens.filter(PRESETS[preset]);
+  const filteredTokens = useMemo(() => {
+    if (!baseTokens.length) return [];
+    let list = baseTokens.filter(PRESETS[preset]);
     list = list.filter((t) => {
       if (
         filter.search &&
@@ -96,8 +86,56 @@ export function TokenColumn({
       }
       return true;
     });
-    return sortTokens(list.length ? list : tokens, sort);
-  }, [tokens, preset, sort, filter]);
+    return sortTokens(list, sort);
+  }, [baseTokens, preset, sort, filter]);
+  useEffect(() => {
+    if (!filteredTokens.length) {
+      setLiveTokens([]);
+      return;
+    }
+    setLiveTokens((prev) => {
+      const prevMap = new Map(prev.map((t) => [t.id, t]));
+      return filteredTokens.map((t) => {
+        const existing = prevMap.get(t.id);
+        return (
+          existing ?? {
+            ...t,
+            _lastUpdatedAt: Date.now(),
+            _highlightTop: false,
+          }
+        );
+      });
+    });
+  }, [filteredTokens]);
+  useEffect(() => {
+    if (!liveTokens.length) return;
+    const interval = setInterval(() => {
+      setLiveTokens((prev) => {
+        const prevTopId = prev[0]?.id;
+        let next = prev.map((t) => (Math.random() < 0.4 ? mutateToken(t) : t));
+        next = [...next].sort((a, b) => b._lastUpdatedAt - a._lastUpdatedAt);
+        const newTopId = next[0]?.id;
+        if (newTopId && newTopId !== prevTopId) {
+          next = next.map((t) =>
+            t.id === newTopId
+              ? { ...t, _highlightTop: true }
+              : { ...t, _highlightTop: false }
+          );
+        }
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [liveTokens.length]);
+  useEffect(() => {
+    if (!liveTokens.some((t) => t._highlightTop)) return;
+    const timeout = setTimeout(() => {
+      setLiveTokens((prev) =>
+        prev.map((t) => (t._highlightTop ? { ...t, _highlightTop: false } : t))
+      );
+    }, 800);
+    return () => clearTimeout(timeout);
+  }, [liveTokens]);
   return (
     <div
       className="
@@ -137,12 +175,10 @@ export function TokenColumn({
             </button>
           </div>
         )}
-        {!isLoading && !isError && visibleTokens.length === 0 && <EmptyState />}
+        {!isLoading && !isError && liveTokens.length === 0 && <EmptyState />}
         {!isLoading &&
           !isError &&
-          visibleTokens.map((token) => (
-            <TokenRow key={token.id} token={token} />
-          ))}
+          liveTokens.map((token) => <TokenRow key={token.id} token={token} />)}
       </div>
     </div>
   );
