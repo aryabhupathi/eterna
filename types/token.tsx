@@ -1,29 +1,40 @@
+export type TokenFilter = {
+  search?: string;
+  minMarketCap?: number;
+};
+export type TokenStage = "new" | "final" | "migrated";
+export type StatusIcon = "rocket" | "shield" | "search" | "verified";
+export type MetricPill = {
+  key: "buy" | "sell" | "lock" | "tax" | "holders";
+  label: string;
+  value: string;
+  color: "green" | "red" | "yellow" | "blue";
+};
 export type Token = {
-  price: number;
-  createdAt: string;
   id: string;
   name: string;
   symbol: string;
   address: string;
+  shortAddress: string;
   image: string;
+  chain: "BNB";
+  price: number;
   marketCap: number;
   volume: number;
   liquidity: number;
   txCount: number;
+  txRatio: number;
   holders: number;
   buyRatio: number;
   buyTax: number;
   sellTax: number;
   dexListed: boolean;
-  age: string;
-  stage: TokenStage;
   trending: boolean;
+  verified: boolean;
+  age: string;
+  createdAt: string;
+  stage: TokenStage;
   riskScore: number;
-};
-export type TokenStage = "new" | "final" | "migrated";
-export type TradeBubble = {
-  id: string;
-  side: "buy" | "sell";
-  price: number;
-  time: number;
+  statusIcons: StatusIcon[];
+  pills: MetricPill[];
 };

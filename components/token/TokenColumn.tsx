@@ -11,6 +11,10 @@ import { TokenColumnHeader } from "./TokenColumnHeader";
 import { ProgressiveList } from "./ProgressiveList";
 import { EmptyState } from "./EmptyState";
 const DEFAULT_SORT: SortState = { key: "price", order: "desc" };
+type TokenFilter = {
+  search?: string;
+  minMarketCap?: number;
+};
 export function TokenColumn({
   stage,
   title,
@@ -25,21 +29,39 @@ export function TokenColumn({
   });
   const [preset, setPreset] = useState<PresetKey>("P1");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
+  const [filter, setFilter] = useState<TokenFilter>({});
   const visibleTokens = useMemo(() => {
     if (!data?.length) return [];
-    const filtered = data.filter(PRESETS[preset]);
-    return sortTokens(filtered.length ? filtered : data, sort);
-  }, [data, preset, sort]);
+    let list = data.filter(PRESETS[preset]);
+    list = list.filter((t) => {
+      if (
+        filter.search &&
+        !`${t.name} ${t.symbol}`
+          .toLowerCase()
+          .includes(filter.search.toLowerCase())
+      ) {
+        return false;
+      }
+      if (
+        filter.minMarketCap !== undefined &&
+        t.marketCap < filter.minMarketCap
+      ) {
+        return false;
+      }
+      return true;
+    });
+    return sortTokens(list.length ? list : data, sort);
+  }, [data, preset, sort, filter]);
   return (
     <div
       className="
-      flex flex-col h-full
-      rounded-2xl
-      border border-white/5
-      bg-linear-to-b from-[#0f172a]/80 to-[#0b1220]/80
-      backdrop-blur-sm
-      overflow-hidden
-    "
+        flex flex-col h-full
+        rounded-2xl
+        border border-white/5
+        bg-linear-to-b from-[#0f172a]/80 to-[#0b1220]/80
+        backdrop-blur-sm
+        overflow-hidden
+      "
     >
       <TokenColumnHeader
         title={title}
@@ -47,13 +69,15 @@ export function TokenColumn({
         onChange={setSort}
         preset={preset}
         onPresetChange={setPreset}
+        filter={filter}
+        onFilterChange={setFilter}
       />
       <div
         className="
-        flex-1 overflow-y-auto
-        px-1 pb-1 space-y-1
-        scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
-      "
+          flex-1 overflow-y-auto
+          px-1 pb-1 space-y-1
+          scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
+        "
       >
         {isLoading &&
           Array.from({ length: 6 }).map((_, i) => (
