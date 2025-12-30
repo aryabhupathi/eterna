@@ -11,6 +11,7 @@ export type MetricPill = {
   color: "green" | "red" | "yellow" | "blue";
 };
 export type Token = {
+  _lastUpdatedAt: any;
   id: string;
   name: string;
   symbol: string;
@@ -37,4 +38,4 @@ export type Token = {
   riskScore: number;
   statusIcons: StatusIcon[];
   pills: MetricPill[];
-};
+}

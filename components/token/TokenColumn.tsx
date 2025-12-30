@@ -1,20 +1,44 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { fetchTokensByStage } from "@/services/tokens.service";
-import { TokenStage } from "@/types/token";
+import { Token, TokenStage } from "@/types/token";
 import { PRESETS, PresetKey } from "@/types/presets";
 import { SortState, sortTokens } from "@/types/sortTokens";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TokenRow } from "./TokenRow";
 import { TokenColumnHeader } from "./TokenColumnHeader";
-import { ProgressiveList } from "./ProgressiveList";
 import { EmptyState } from "./EmptyState";
 const DEFAULT_SORT: SortState = { key: "price", order: "desc" };
 type TokenFilter = {
   search?: string;
   minMarketCap?: number;
 };
+type LiveToken = Token & {
+  _lastUpdatedAt: number;
+};
+function clamp(n: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, n));
+}
+function randomDelta(range: number) {
+  return (Math.random() - 0.5) * range;
+}
+function mutateToken(token: LiveToken): LiveToken {
+  const now = Date.now();
+  const priceDelta = randomDelta(token.price * 0.015);
+  const newPrice = clamp(token.price + priceDelta, 0, Infinity);
+  const ratioDelta = randomDelta(0.05);
+  const newBuyRatio = clamp(token.buyRatio + ratioDelta, 0.1, 0.9);
+  return {
+    ...token,
+    price: Number(newPrice.toFixed(6)),
+    buyRatio: Number(newBuyRatio.toFixed(2)),
+    txRatio: newBuyRatio,
+    txCount: token.txCount + Math.floor(Math.random() * 4),
+    volume: token.volume + Math.floor(Math.random() * 1200),
+    _lastUpdatedAt: now,
+  };
+}
 export function TokenColumn({
   stage,
   title,
@@ -30,9 +54,31 @@ export function TokenColumn({
   const [preset, setPreset] = useState<PresetKey>("P1");
   const [sort, setSort] = useState<SortState>(DEFAULT_SORT);
   const [filter, setFilter] = useState<TokenFilter>({});
+  const [tokens, setTokens] = useState<Token[]>([]);
+  useEffect(() => {
+    if (data?.length) {
+      setTokens(
+        data.map((t) => ({
+          ...t,
+          _lastUpdatedAt: Date.now(),
+        }))
+      );
+    }
+  }, [data]);
+  useEffect(() => {
+    if (!tokens.length) return;
+    const interval = setInterval(() => {
+      setTokens((prev) => {
+        let next = prev.map((t) => (Math.random() < 0.4 ? mutateToken(t) : t));
+        next = [...next].sort((a, b) => b._lastUpdatedAt - a._lastUpdatedAt);
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(interval);
+  }, [tokens.length]);
   const visibleTokens = useMemo(() => {
-    if (!data?.length) return [];
-    let list = data.filter(PRESETS[preset]);
+    if (!tokens.length) return [];
+    let list = tokens.filter(PRESETS[preset]);
     list = list.filter((t) => {
       if (
         filter.search &&
@@ -50,8 +96,8 @@ export function TokenColumn({
       }
       return true;
     });
-    return sortTokens(list.length ? list : data, sort);
-  }, [data, preset, sort, filter]);
+    return sortTokens(list.length ? list : tokens, sort);
+  }, [tokens, preset, sort, filter]);
   return (
     <div
       className="
@@ -92,12 +138,11 @@ export function TokenColumn({
           </div>
         )}
         {!isLoading && !isError && visibleTokens.length === 0 && <EmptyState />}
-        {!isLoading && !isError && visibleTokens.length > 0 && (
-          <ProgressiveList
-            items={visibleTokens}
-            renderItem={(token) => <TokenRow key={token.id} token={token} />}
-          />
-        )}
+        {!isLoading &&
+          !isError &&
+          visibleTokens.map((token) => (
+            <TokenRow key={token.id} token={token} />
+          ))}
       </div>
     </div>
   );
