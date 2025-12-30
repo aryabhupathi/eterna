@@ -10,13 +10,6 @@ export default function TokenStats({ token }: { token: Token }) {
   function submitTrade() {
     const amt = Number(amount);
     if (!amt || amt <= 0) return;
-    console.log("TRADE", {
-      side,
-      amount: amt,
-      token: token.symbol,
-      price: token.price,
-      time: Date.now(),
-    });
     setAmount("");
     setOpenMobile(false);
   }

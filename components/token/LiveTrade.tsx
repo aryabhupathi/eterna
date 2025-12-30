@@ -19,11 +19,6 @@ export default function LiveTrades({ price }: { price: number }) {
         priceRef.current +
         (side === "buy" ? 1 : -1) * Math.floor(Math.random() * 20);
       const total = Math.round(tradePrice * amount);
-      console.log("💱 TRADE", {
-        tradePrice,
-        amount,
-        total,
-      });
       setTrades((prev) =>
         [
           {
@@ -40,7 +35,7 @@ export default function LiveTrades({ price }: { price: number }) {
           ...prev.map((t) => ({ ...t, isNew: false })),
         ].slice(0, 40)
       );
-    }, 600);
+    }, 1000);
     return () => clearInterval(id);
   }, []);
   return (

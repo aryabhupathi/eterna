@@ -38,11 +38,6 @@ const tokenSlice = createSlice({
       token.marketCap = token.price * 10_000;
       token.volume += Math.abs(token.price - prev);
       token.txCount += Math.random() > 0.7 ? 1 : 0;
-      console.log("🟢 REDUX PRICE UPDATE", {
-        id: token.id,
-        prev,
-        next: token.price,
-      });
     },
   },
 });

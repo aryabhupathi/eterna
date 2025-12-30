@@ -23,7 +23,6 @@ export function startPriceFeed(
     let next = last + delta;
     if (next < 100) next = 100;
     prices.set(id, next);
-    console.log("📈 PRICE FEED", { id, last, next });
     onUpdate({ id, price: next });
   }, 700);
 }
