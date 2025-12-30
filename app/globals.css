@@ -71,6 +71,10 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+::-webkit-scrollbar {
+  width: 6px;
+}
+
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
